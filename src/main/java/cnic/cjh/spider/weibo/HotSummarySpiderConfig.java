@@ -18,7 +18,7 @@ import cnic.cjh.utils.spring.ApplicationContextSupport;
  * 抓取 新浪微博热门搜索 所用的配置
  * 
  * @author caojunhui
- *
+ * @date 2017年9月24日
  */
 public class HotSummarySpiderConfig
 {
@@ -28,6 +28,8 @@ public class HotSummarySpiderConfig
 		public static String URL = "URL";
 		// 过滤文件所在的率
 		public static String filtered_file = "filtered_file";
+		// mybatis配置文件所在的路径
+		public static String mybatis_config_file = "mybatis_config_file";
 	}
 
 	private Map<String, Object> config;
@@ -38,30 +40,32 @@ public class HotSummarySpiderConfig
 		return config;
 	}
 
-	public HotSummarySpiderConfig(String filePath)
+	public HotSummarySpiderConfig(String resourceName)
 	{
-		loadConfigFromProperties(filePath);
+		loadConfigFromProperties(resourceName);
 	}
 
-	private void loadConfigFromProperties(String filePath)
+	private void loadConfigFromProperties(String resourceName)
 	{
 		Properties pro = new Properties();
-		InputStream input_stream = HotSummarySpiderConfig.class.getResourceAsStream("/weibo-spider-config.properties");
+		InputStream input_stream = HotSummarySpiderConfig.class.getResourceAsStream(resourceName);
 		try
 		{
 			pro.load(input_stream);
 		} catch (IOException e)
 		{
-			l.error("Load properties file(" + filePath + ") failed !", e);
+			l.error("Load properties file(" + resourceName + ") failed !", e);
 		}
 		if (config == null)
 			config = new TreeMap<String, Object>();
 		if (!StringUtils.isEmpty(pro.getProperty(ConfigName.URL)))
-		{//加载所有属性
-			config.put(ConfigName.URL, pro.get(ConfigName.URL));
-			config.put(ConfigName.filtered_file,pro.get(ConfigName.filtered_file));
+		{// 加载所有属性,并设置
+			for(Object key : pro.keySet())
+			{
+				config.put(key.toString(),pro.get(key));			
+			}
 		}
-		l.debug(JSON.toJSONString(config));
+l.info("Loding config from properties file {} {}",resourceName,JSON.toJSON(config));
 	}
 
 	public static void main(String[] args)

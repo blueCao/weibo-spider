@@ -10,9 +10,39 @@
 	http://www.springframework.org/schema/tx/spring-tx.xsd   
 	http://www.springframework.org/schema/aop    
 	http://www.springframework.org/schema/aop/spring-aop.xsd">
-	
-	<!--初始化SinaweiboSpiderConfig，指定配置文件的路径-->
-	<bean id="spiderTaskQueue" class="cnic.cjh.spider.weibo.HotSummarySpiderConfig">
-	    <constructor-arg type="java.lang.String" value="weibo-spider-config.properties"/>
+	<!-- 配置dataSource -->
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName">
+			<value>com.mysql.jdbc.Driver</value>
+		</property>
+		<property name="url">
+			<value>jdbc:mysql://localhost:3306/weibo_spider</value>
+		</property>
+		<property name="username">
+			<value>root</value>
+		</property>
+		<property name="password">
+			<value>password</value>
+		</property>
+	</bean>
+
+	<!-- 配置sqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" scope="prototype">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+	</bean>
+
+	<!-- 配置mybatis-spring特有的 SqlSessionTemplate -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+
+
+
+	<!--初始化SinaweiboSpiderConfig，指定配置文件的路径 -->
+	<bean id="spiderConfig" class="cnic.cjh.spider.weibo.HotSummarySpiderConfig">
+		<constructor-arg type="java.lang.String"
+			value="/weibo-spider-config.properties" />
 	</bean>
 </beans>

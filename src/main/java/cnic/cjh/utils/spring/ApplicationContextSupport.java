@@ -42,4 +42,12 @@ public class ApplicationContextSupport
 		return applicationContext.getBean(beanName,T);
 	}
 	
+	public static synchronized Object getBean(String beanName)
+	{
+		if(applicationContext == null)
+		{
+			initContext();
+		}
+		return applicationContext.getBean(beanName);
+	}	
 }

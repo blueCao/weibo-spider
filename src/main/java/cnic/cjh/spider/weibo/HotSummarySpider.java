@@ -2,6 +2,7 @@ package cnic.cjh.spider.weibo;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.math.NumberUtils;
@@ -12,14 +13,17 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import com.alibaba.fastjson.JSON;
 
+import cnic.cjh.spider.log.SpiderLog;
 import cnic.cjh.spider.weibo.bean.BriefNews;
 import cnic.cjh.spider.weibo.bean.Html;
 import cnic.cjh.utils.jsoup.DocumentWrapper;
@@ -29,16 +33,31 @@ import cnic.cjh.utils.spring.ApplicationContextSupport;
  * 抓取微博热搜中的信息 http://s.weibo.com/top/summary?cate=realtimehot
  * 
  * @author caojunhui
- *
+ * @date 2017年9月24日
  */
 public class HotSummarySpider
 {
 	private static Logger l = LoggerFactory.getLogger(HotSummarySpider.class);
 	private String URL;
-
-	public HotSummarySpider()
+	private SqlSession sqlSession;
+	
+	public String getURL()
 	{
-		HotSummarySpiderConfig config = ApplicationContextSupport.getBean(HotSummarySpiderConfig.class);
+		return URL;
+	}
+
+	public SqlSession getSqlSession()
+	{
+		return sqlSession;
+	}
+
+	public void setSqlSession(SqlSession sqlSession)
+	{
+		this.sqlSession = sqlSession;
+	}
+
+	public HotSummarySpider(HotSummarySpiderConfig config,SqlSession sqlSession)
+	{
 		if(config == null)
 		{
 			l.error("HotSummarySpiderConfig should not be null!");
@@ -54,12 +73,14 @@ public class HotSummarySpider
 			URL = (String) o;
 		else
 			l.error("Cannot convert from object to string!");
+		
+		this.sqlSession = sqlSession;
 	}
-
+	
 	/**
 	 * @return html页面字符
 	 */
-	public Object spide()
+	public SpiderLog spide()
 	{
 		if (StringUtils.isEmpty(URL))
 		{
@@ -97,10 +118,17 @@ public class HotSummarySpider
 				l.error("###IOException###", e);
 			}
 		}
-l.debug(html);	
-		return html;
+l.debug(html);
+		SpiderLog log = new SpiderLog();
+		log.setContent(html);
+l.debug("############"+html);
+		log.setDate(new Date());
+		log.setUrl(URL);
+		log.setLog_id(log.getDate().getTime() * 10 + Math.round((Math.random() * 10)));
+l.info("###################"+log.getLog_id());
+		return log;
 	}
-	private List<BriefNews> handle(String html)
+	public List<BriefNews> handle(String html)
 	{
 		if(StringUtils.isEmpty(html))
 		{
@@ -170,12 +198,21 @@ l.debug(html);
 l.info(JSON.toJSONString(result));
 		return result.isEmpty() ? null : result;
 	}
-	public static void main(String[] args)
+	public static void main(String[] args) throws Throwable
 	{
-		HotSummarySpider s = new HotSummarySpider();
-		while(true) 
+		HotSummarySpider s = new HotSummarySpider(new HotSummarySpiderConfig("/weibo-spider-config.properties"),ApplicationContextSupport.getBean(SqlSessionTemplate.class));
+		SpiderLog log = s.spide();
+		s.getSqlSession().insert(SpiderLog.class.getName()+".insertSpiderLog", log);
+		List<BriefNews> list = s.handle((String)log.getContent());
+		for(BriefNews news : list)
 		{
-			s.handle((String)s.spide());
+			news.useless();
+			s.getSqlSession().insert(BriefNews.class.getName()+".insertBriefNews", news);			
 		}
+
+//		while(true) 
+//		{
+//			s.getSqlSession().insert(SpiderLog.class.getName()+".insertSpiderLog", s.spide());
+//		}
 	}
 }

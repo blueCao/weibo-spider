@@ -3,6 +3,7 @@ package cnic.cjh.spider.weibo.bean;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
@@ -19,37 +20,50 @@ import cnic.cjh.utils.spring.ApplicationContextSupport;
  * @author caojunhui
  * @date 2017年9月22日
  */
+/**
+ * 
+ * 
+ * @author caojunhui
+ * @date 2017年9月24日
+ */
+/**
+ * 
+ * 
+ * @author caojunhui
+ * @date 2017年9月24日
+ */
 public class BriefNews
 {
 	public static final String PREFIX_URL = "http://s.weibo.com";
 	private static Logger l = LoggerFactory.getLogger(BriefNews.class);
 	public static List<String> filter_words;
+	
 	static
 	{
 		HotSummarySpiderConfig config = ApplicationContextSupport.getBean(HotSummarySpiderConfig.class);
-		if(config == null)
+		if (config == null)
 		{
 			l.error("HotSummarySpiderConfig should not be null!");
-		}
-		else
+		} else
 		{
-			if(config.getConfig() == null)
+			if (config.getConfig() == null)
 			{
 				l.error("Config Map should not be null!");
 			}
-			String filtered_file_name = (String)config.getConfig().get(HotSummarySpiderConfig.ConfigName.filtered_file);
-			InputStream file_stream = BriefNews.class.getResourceAsStream("/"+filtered_file_name);
-//			file = new File("/opt/filter_words.txt");
-			Scanner sc = new Scanner(file_stream,"UTF-8");
+			String filtered_file_name = (String) config.getConfig()
+					.get(HotSummarySpiderConfig.ConfigName.filtered_file);
+			InputStream file_stream = BriefNews.class.getResourceAsStream(filtered_file_name);
+			// file = new File("/opt/filter_words.txt");
+			Scanner sc = new Scanner(file_stream, "UTF-8");
 			String line = sc.next();
 			sc.close();
-			if(StringUtils.isEmpty(line))
+			if (StringUtils.isEmpty(line))
 			{
-				l.error("Empty filter words file!Please check file :"+filtered_file_name);
+				l.error("Empty filter words file!Please check file :" + filtered_file_name);
 			}
 			String[] words = line.split(",");
 			filter_words = new ArrayList<String>();
-			for(String word : words)
+			for (String word : words)
 			{
 				filter_words.add(word);
 			}
@@ -64,7 +78,7 @@ public class BriefNews
 	/**
 	 * the date news produced,milliSecond
 	 */
-	private Long date;
+	private Long timeInMills;
 	/**
 	 * users click times
 	 */
@@ -82,6 +96,62 @@ public class BriefNews
 	 * suffixURL's hashCode
 	 */
 	private int hashCode;
+
+	/**
+	 * 过滤掉的字符
+	 */
+	private List<String> mapped_words;
+	 
+	/**
+	 * 是否被过滤
+	 */
+	private boolean filtered;
+	/**
+	 * 日期
+	 */
+	private Date date;
+	
+	public void setDate(Date date)
+	{
+		this.date = date;
+	}
+
+	public List<String> getMapped_words()
+	{
+		return mapped_words;
+	}
+
+	public void setMapped_words(List<String> mapped_words)
+	{
+		this.mapped_words = mapped_words;
+	}
+
+	public boolean isFiltered()
+	{
+		return filtered;
+	}
+
+	public void setFiltered(boolean filtered)
+	{
+		this.filtered = filtered;
+	}
+
+	public long getLog_id()
+	{
+		return log_id;
+	}
+
+	public void setLog_id(long log_id)
+	{
+		this.log_id = log_id;
+	}
+
+	/**
+	 * 对应的Spider日志ID
+	 */
+	private long log_id;
+	
+	
 	public BriefNews()
 	{
 	}
@@ -94,7 +164,8 @@ public class BriefNews
 		this.hot = hot;
 		this.rank = rank;
 		this.suffixURL = detailUrl;
-		this.date = Calendar.getInstance().getTimeInMillis();
+		this.timeInMills = Calendar.getInstance().getTimeInMillis();
+		this.date = new Date(timeInMills);
 		this.hashCode = hashCode();
 	}
 
@@ -102,7 +173,9 @@ public class BriefNews
 	{
 		super();
 		this.title = title;
-		this.date = date;
+		this.timeInMills = date;
+		this.date = new Date(timeInMills);
+
 	}
 
 	/**
@@ -112,18 +185,30 @@ public class BriefNews
 	 */
 	public boolean useless()
 	{
-		if(clickTimes > 1000000)
-		{// hot news contained
-			return false;
-		}
-		for(String filter_word : filter_words)
+		boolean useless = false;
+		
+		List<String> list = new ArrayList<String>();
+		for (String filter_word : filter_words)
 		{
-			if(title.contains(filter_word))
+			if (title.contains(filter_word))
 			{
-				return true;
+				list.add(filter_word);
 			}
 		}
-		return false;
+		if(list.size() > 0)
+		{
+			useless = true;
+		}
+		
+		if (clickTimes > 1000000)
+		{// 热搜实时搜索度超过1000000时，认为信息有用
+			useless = false;
+		}
+		
+		//信息无用，则过滤；有用，则不过滤
+		this.filtered = useless;
+		
+		return useless;
 	}
 
 	/**
@@ -151,22 +236,20 @@ public class BriefNews
 		builder.append("</em>");
 		builder.append("</span>");
 		// hot or new
-//		if ("��".equals(hot))
-//		{
-//			builder.append("<i class=\"icon new\"></i>");
-//		} else if ("��".equals(hot))
-//		{
-//			builder.append("<i class=\"icon hot\"></i>");
-//		}
+		// if ("��".equals(hot))
+		// {
+		// builder.append("<i class=\"icon new\"></i>");
+		// } else if ("��".equals(hot))
+		// {
+		// builder.append("<i class=\"icon hot\"></i>");
+		// }
 		if ("热".equals(hot) || clickTimes > 1000000)
-		{//  hot label or clickTimes more than 1 million
+		{// hot label or clickTimes more than 1 million
 			builder.append("<i class=\"icon hot\"></i>");
-		}
-		else if("荐".equals(hot))
+		} else if ("荐".equals(hot))
 		{// recommend label
-			builder.append("<i class=\"icon recommend\"></i>");			
-		}
-		else if("新".equals(hot) || Calendar.getInstance().getTimeInMillis() - date < 7200000L)
+			builder.append("<i class=\"icon recommend\"></i>");
+		} else if ("新".equals(hot) || Calendar.getInstance().getTimeInMillis() - timeInMills < 7200000L)
 		{// new label or happened less than 2 hours, settting new label
 			builder.append("<i class=\"icon new\"></i>");
 		}
@@ -191,7 +274,7 @@ public class BriefNews
 	@Override
 	public boolean equals(Object obj)
 	{
-		return hashCode == ((BriefNews)obj).getHashCode();
+		return hashCode == ((BriefNews) obj).getHashCode();
 	}
 
 	/**
@@ -249,7 +332,8 @@ public class BriefNews
 
 	public static void main(String[] args)
 	{
-//		System.out.println(new BriefNews("�ܲ�", 10000, "��", 1, "/abc").toHtmlString());
+		// System.out.println(new BriefNews("�ܲ�", 10000, "��", 1,
+		// "/abc").toHtmlString());
 		new BriefNews();
 	}
 
@@ -269,13 +353,18 @@ public class BriefNews
 		return suffixURL.hashCode();
 	}
 
-	public Long getDate()
+	public Long getTimeInMills()
+	{
+		return timeInMills;
+	}
+
+	public Date getDate()
 	{
 		return date;
 	}
 
-	public void setDate(Long date)
+	public void setTimeInMills(Long timeInMills)
 	{
-		this.date = date;
+		this.timeInMills = timeInMills;
 	}
 }
