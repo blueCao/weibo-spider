@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>     
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration>
+
+	<appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d - %m%n" />
+<!-- 			<param name="ConversionPattern" value="%d - %c -%-l [%t] %-5p %x - %m%n" /> -->
+		</layout>
+
+		<!--限制输出级别 -->
+		<filter class="org.apache.log4j.varia.LevelRangeFilter">
+			<param name="LevelMax" value="INFO" />
+			<param name="LevelMin" value="DEBUG" />
+		</filter>
+	</appender>
+
+	<appender name="ERROR" class="org.apache.log4j.FileAppender">
+		<param name="File" value="error_log.txt" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d - %c -%-l [%t] %-5p %x - %m%n" />
+		</layout>
+		<!--限制输出级别 -->
+		<filter class="org.apache.log4j.varia.LevelRangeFilter">
+			<param name="LevelMax" value="ERROR" />
+			<param name="LevelMin" value="ERROR" />
+		</filter>
+	</appender>
+
+	<appender name="INFO" class="org.apache.log4j.FileAppender">
+		<param name="File" value="info_log.txt" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d - %c -%-l [%t] %-5p %x - %m%n" />
+		</layout>
+		<!--限制输出级别 -->
+		<filter class="org.apache.log4j.varia.LevelRangeFilter">
+			<param name="LevelMax" value="INFO" />
+			<param name="LevelMin" value="INFO" />
+		</filter>
+	</appender>
+
+	<appender name="WARN" class="org.apache.log4j.FileAppender">
+		<param name="File" value="warn_log.txt" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d - %c -%-l [%t] %-5p %x - %m%n" />
+		</layout>
+		<!--限制输出级别 -->
+		<filter class="org.apache.log4j.varia.LevelRangeFilter">
+			<param name="LevelMax" value="WARN" />
+			<param name="LevelMin" value="WARN" />
+		</filter>
+	</appender>
+
+
+	<appender name="DATABASE" class="org.apache.log4j.jdbc.JDBCAppender">
+		<param name="URL" value="jdbc:oracle:thin:@192.168.0.59:1521:oanet" />
+		<param name="driver" value="oracle.jdbc.driver.OracleDriver" />
+		<param name="user" value="hdczoa" />
+		<param name="password" value="system" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="INSERT INTO hdczoa.LOG4J(stamp,thread, info_level,class,message) VALUES ('%d', '%t', '%p', '%c', %m)" />
+		</layout>
+	</appender>
+
+	<!-- 发邮件（只有ERROR时才会发送！） -->
+	<appender name="MAIL" class="org.apache.log4j.net.SMTPAppender">
+		<param name="threshold" value="debug" />
+		<!-- 日志的错误级别 <param name="threshold" value="fatal"/> -->
+		<!-- 缓存文件大小，日志达到512K时发送Email -->
+		<param name="BufferSize" value="512" /><!-- 单位K -->
+		<param name="From" value="test@163.com" />
+		<param name="SMTPHost" value="smtp.163.com" />
+		<param name="Subject" value="juyee-log4jMessage" />
+		<param name="To" value="test@163.com" />
+		<param name="SMTPUsername" value="test" />
+		<param name="SMTPPassword" value="test" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%-d{yyyy-MM-dd HH:mm:ss.SSS} [%p]-[%c] %m%n" />
+		</layout>
+	</appender>
+
+	<appender name="ASYNC" class="org.apache.log4j.AsyncAppender">
+		<param name="BufferSize" value="256" />
+		<appender-ref ref="DATABASE" />
+	</appender>
+	<!-- 输出到日志文件 每天一个日志 -->
+	<appender name="filelog_daily" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="daily.log" />
+		<param name="DatePattern" value="'daily.'yyyy-MM-dd'.log'" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="[%d{yyyy-MM-dd HH:mm:ss/} %-5p] [%t] (%c:%L) - %m%n" />
+		</layout>
+	</appender>
+
+
+	<!--通过<logger></logger>的定义可以将各个包中的类日志输出到不同的日志文件中 -->
+	<!-- <logger name="cnic.caojunhui" additivity="false"> -->
+	<!-- <level value="DEBUG" /> -->
+	<!-- <appender-ref ref="CONSOLE" /> -->
+	<!-- </logger> -->
+
+	<root>
+		<priority value="INFO" />
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="INFO" />
+		<appender-ref ref="WARN" />
+		<appender-ref ref="ERROR" />
+	</root>
+
+</log4j:configuration>    

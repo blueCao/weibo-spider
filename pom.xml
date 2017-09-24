@@ -43,12 +43,33 @@
 			<artifactId>fastjson</artifactId>
 			<version>1.2.7</version>
 		</dependency>
-		
+
 		<!-- httpclient 4.5.3 -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.5.3</version>
+		</dependency>
+
+		<!-- commons-lang 2.6 -->
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+
+		<!-- jsoup 1.7.2 -->
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.7.2</version>
+		</dependency>
+		
+		<!-- mybatis 3.4.1-->
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.4.1</version>
 		</dependency>
 
 	</dependencies>
