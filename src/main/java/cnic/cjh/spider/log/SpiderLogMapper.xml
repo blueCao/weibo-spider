@@ -4,8 +4,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cnic.cjh.spider.log.SpiderLog">
 	<insert id="insertSpiderLog" flushCache="true" useGeneratedKeys="true">
-		insert into spider_log(log_id,date,content,url)
-		values (#{log_id},#{date},#{content},#{url})
+		insert into spider_log(log_id,date,content,url,successful)
+		values (#{log_id},#{date},#{content},#{url},#{successful})
 	</insert>
 
 <!-- 	<select id="findbyid" parameterType="Integer" resultMap="StudentResult"> -->

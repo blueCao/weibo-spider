@@ -15,22 +15,10 @@ import cnic.cjh.spider.weibo.HotSummarySpiderConfig;
 import cnic.cjh.utils.spring.ApplicationContextSupport;
 
 /**
- * 短消息实体
- * 
- * @author caojunhui
- * @date 2017年9月22日
- */
-/**
  * 
  * 
  * @author caojunhui
- * @date 2017年9月24日
- */
-/**
- * 
- * 
- * @author caojunhui
- * @date 2017年9月24日
+ * @date 2017年9月25日
  */
 public class BriefNews
 {
@@ -100,7 +88,7 @@ public class BriefNews
 	/**
 	 * 过滤掉的字符
 	 */
-	private List<String> mapped_words;
+	private List<String> mapped_words = new ArrayList<String>();
 	 
 	/**
 	 * 是否被过滤
@@ -116,9 +104,17 @@ public class BriefNews
 		this.date = date;
 	}
 
-	public List<String> getMapped_words()
+	/**
+	 * @return 匹配到的过滤字符用逗号分隔例如“陈小春,林心如,”
+	 */
+	public String getMapped_words()
 	{
-		return mapped_words;
+		StringBuilder b = new StringBuilder();
+		for(String s : mapped_words)
+		{
+			b.append(s).append(",");
+		}
+		return b.length() > 0 ? b.toString() : null;
 	}
 
 	public void setMapped_words(List<String> mapped_words)
@@ -151,7 +147,22 @@ public class BriefNews
 	 */
 	private long log_id;
 	
+	/**
+	 * 新闻对应的UR
+	 */
+	private String url;
 	
+	public void setUrl(String url)
+	{
+		this.url = PREFIX_URL+suffixURL;
+	}
+
+	public String getUrl()
+	{
+		setUrl(PREFIX_URL+suffixURL);
+		return url;
+	}
+
 	public BriefNews()
 	{
 	}
@@ -187,15 +198,16 @@ public class BriefNews
 	{
 		boolean useless = false;
 		
-		List<String> list = new ArrayList<String>();
+		if(mapped_words == null)
+			mapped_words = new ArrayList<String>();
 		for (String filter_word : filter_words)
 		{
 			if (title.contains(filter_word))
 			{
-				list.add(filter_word);
+				mapped_words.add(filter_word);
 			}
 		}
-		if(list.size() > 0)
+		if(mapped_words.size() > 0)
 		{
 			useless = true;
 		}

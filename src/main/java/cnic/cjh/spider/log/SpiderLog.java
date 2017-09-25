@@ -8,6 +8,15 @@ public class SpiderLog
 	private String content;
 	private String url;
 	private long log_id;
+	private boolean successful;
+	public boolean getSuccessful()
+	{
+		return successful;
+	}
+	public void setSuccessful(boolean successful)
+	{
+		this.successful = successful;
+	}
 	public long getLog_id()
 	{
 		return log_id;

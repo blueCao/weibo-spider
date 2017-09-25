@@ -3,8 +3,18 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cnic.cjh.spider.weibo.bean.BriefNews">
+	<!-- 插入一条微博热搜 -->
 	<insert id="insertBriefNews" flushCache="true" useGeneratedKeys="true">
-		insert into weibo_top_summary(date,filtered,filtered_words,search_times,log_id,title)
-		values (#{date},#{filtered},#{mapped_words},#{clickTimes},#{log_id},#{title})
+		insert into
+		weibo_top_summary(date,filtered,filtered_words,search_times,log_id,title,url,rank)
+		values
+		(#{date},#{filtered},#{mapped_words},#{clickTimes},#{log_id},#{title},#{url},#{rank})
 	</insert>
+
+	<!-- 查找是否有相同的微博热搜 -->
+	<select id="selectBriefNews" resultType="cnic.cjh.spider.weibo.bean.BriefNews">
+		select title
+		from weibo_top_summary
+		where title = #{title}
+	</select>
 </mapper>
