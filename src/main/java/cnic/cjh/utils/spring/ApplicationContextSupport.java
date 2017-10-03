@@ -14,11 +14,6 @@ public class ApplicationContextSupport
 {
 	protected static ClassPathXmlApplicationContext applicationContext;
 	
-	public ApplicationContextSupport()
-	{
-		
-	}
-	
 	public static void initContext()
 	{
 		ApplicationContextSupport.applicationContext = new ClassPathXmlApplicationContext(new String[] { "applicationContext.xml" });

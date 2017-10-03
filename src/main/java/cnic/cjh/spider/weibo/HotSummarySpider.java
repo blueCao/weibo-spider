@@ -19,7 +19,6 @@ import org.apache.http.util.EntityUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -30,7 +29,7 @@ import cnic.cjh.spider.log.SpiderLog;
 import cnic.cjh.spider.weibo.bean.BriefNews;
 import cnic.cjh.spider.weibo.bean.Html;
 import cnic.cjh.utils.jsoup.DocumentWrapper;
-import cnic.cjh.utils.spring.ApplicationContextSupport;
+import cnic.cjh.utils.mybatis.SqlSessionSupport;
 
 /**
  * 抓取微博热搜中的信息 http://s.weibo.com/top/summary?cate=realtimehot
@@ -2376,30 +2375,38 @@ public class HotSummarySpider
 			}
 			result.add(new BriefNews(title, clickTimes, hot, rank, url));
 		}
-		l.info(JSON.toJSONString(result));
+//		l.info(JSON.toJSONString(result));
 		return result.isEmpty() ? null : result;
 	}
 
 	public static void main(String[] args) throws Throwable
 	{
 		int i = 0;
+		SqlSession sqlSession = SqlSessionSupport.getSqlSession();
+		HotSummarySpider s = new HotSummarySpider(new HotSummarySpiderConfig("/weibo-spider-config.properties"),
+				sqlSession);
 		while (true)
 		{
 			i = i % Integer.MAX_VALUE +1;
 l.debug("Spider turn" +i+ " finished!");
-
-			HotSummarySpider s = new HotSummarySpider(new HotSummarySpiderConfig("/weibo-spider-config.properties"),
-					ApplicationContextSupport.getBean(SqlSessionTemplate.class));
 			SpiderLog log = s.spide();
-			s.getSqlSession().insert(SpiderLog.class.getName() + ".insertSpiderLog", log);
+			if(sqlSession.insert(SpiderLog.class.getName() + ".insertSpiderLog", log)>0)
+			{
+l.info("insert spider_log {}",JSON.toJSON(log));
+			}
 			List<BriefNews> list = s.handle((String) log.getContent());
 			for (BriefNews news : list)
 			{
 				news.useless();
-				if (s.getSqlSession().selectOne(BriefNews.class.getName() + ".selectBriefNews", news) == null)
-					s.getSqlSession().insert(BriefNews.class.getName() + ".insertBriefNews", news);
+				if (sqlSession.selectOne(BriefNews.class.getName() + ".selectBriefNews", news) == null)
+				{
+l.info("insert news {}",JSON.toJSON(log));
+					sqlSession.insert(BriefNews.class.getName() + ".insertBriefNews", news);
+				}
 			}
 l.debug("Spider turn" + i + " finished!");
+sqlSession.commit();
+Thread.sleep(100);
 		}
 	}
 }

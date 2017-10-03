@@ -1,10 +1,10 @@
 package cnic.cjh.utils.mybatis;
 
+import java.io.InputStream;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.mybatis.spring.SqlSessionFactoryBean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 /**
  * 从SqlSessionFactory中请求一个SqlSession
@@ -14,22 +14,22 @@ import org.slf4j.LoggerFactory;
  */
 public class SqlSessionSupport
 {
-	private SqlSession sqlSession;
 	private static SqlSessionFactory sqlSessionFactory;
-	private static final Logger l = LoggerFactory.getLogger(SqlSessionSupport.class);
 
-	public SqlSessionSupport(SqlSessionFactoryBean sqlSessionFactoryBean)
+	private static void init()
+	{
+		String resource = "/mybatis-config.xml";
+		InputStream inputStream = SqlSessionSupport.class.getResourceAsStream(resource);
+
+		sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+	}
+
+	public static SqlSession getSqlSession()
 	{
 		if (sqlSessionFactory == null)
 		{
-			try
-			{
-				sqlSessionFactory = sqlSessionFactoryBean.getObject();
-			} catch (Exception e)
-			{
-				l.error("Exception occursed when sqlSessionFactoryBean.getObject() !",e);
-			}
+			init();
 		}
-		sqlSession = sqlSessionFactory.openSession();
+		return sqlSessionFactory.openSession();
 	}
 }

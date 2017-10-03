@@ -103,7 +103,7 @@
 	<!-- </logger> -->
 
 	<root>
-		<priority value="debug" />
+		<priority value="INFO" />
 		<appender-ref ref="CONSOLE" />
 		<appender-ref ref="INFO" />
 		<appender-ref ref="WARN" />
