@@ -7,6 +7,7 @@ CREATE TABLE weibo_top_summary (
    search_times int NOT NULL,
    log_id bigint NOT NULL,
    title char(128) NOT NULL,
+   hot char(128) NULL COMMENT '热，新，荐，爆',
    url varchar(65000) NOT NULL,
    rank smallint NULL COMMENT '微博热搜排名',
    CONSTRAINT weibo_top_summary_pk PRIMARY KEY (news_id)

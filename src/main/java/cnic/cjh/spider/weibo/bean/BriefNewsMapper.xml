@@ -6,15 +6,26 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<!-- 插入一条微博热搜 -->
 	<insert id="insertBriefNews" flushCache="true" useGeneratedKeys="true">
 		insert into
-		weibo_top_summary(date,filtered,filtered_words,search_times,log_id,title,url,rank)
+		weibo_top_summary(date,filtered,filtered_words,search_times,log_id,title,url,rank,hot)
 		values
-		(#{date},#{filtered},#{mapped_words},#{clickTimes},#{log_id},#{title},#{url},#{rank})
+		(#{date},#{filtered},#{mapped_words},#{search_times},#{log_id},#{title},#{url},#{rank},#{hot})
 	</insert>
 
-	<!-- 查找是否有相同的微博热搜 -->
-	<select id="selectBriefNews" resultType="cnic.cjh.spider.weibo.bean.BriefNews">
+	<!-- 查找是否有相同标题的微博热搜 -->
+	<select id="queryFromTitle" resultType="cnic.cjh.spider.weibo.bean.BriefNews">
 		select title
-		from weibo_top_summary
+		from
+		weibo_top_summary
 		where title = #{title}
 	</select>
+
+	<!-- 查找最近一天的微博热搜新闻 -->
+	<select id="query24h" resultType="cnic.cjh.spider.weibo.bean.BriefNews">
+		select
+		date,search_times,title,url,rank,hot
+		from weibo_top_summary
+		where
+		UNIX_TIMESTAMP(date)  &gt; UNIX_TIMESTAMP(NOW()) - 3600 * 24
+	</select>
+
 </mapper>
