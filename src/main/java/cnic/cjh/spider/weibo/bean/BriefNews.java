@@ -252,8 +252,12 @@ public class BriefNews
 
 		// url
 		builder.append("<li>");
-		builder.append("<a href=\"");
-//		builder.append(PREFIX_URL);
+		//在当前窗口打开新闻
+//		builder.append("<a href=\"");
+		//在新的窗口中打开新闻
+		builder.append("<a target='_blank' href=\"");
+
+		//		builder.append(PREFIX_URL);
 //		builder.append(suffixURL);
 		builder.append(url);
 		builder.append("\">");

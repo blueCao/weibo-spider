@@ -16,7 +16,7 @@ CREATE INDEX weibo_top_summary_idx_title ON weibo_top_summary (title);
 
 -- 日志
 CREATE TABLE IF NOT EXISTS spider_log (
-   log_id bigint NOT NULL COMMENT '将date转换成 成long * 10 + 0到9的随机数    生成ID',
+   log_id bigint NOT NULL COMMENT ' time_in_milli左移10位 + 0到1023的随机数（补足剩余10位）    生成ID',
    date timestamp NOT NULL,
    content mediumtext  CHARACTER SET utf8mb4 NOT NULL COMMENT '抓取的内容信息',
    url varchar(65000) NOT NULL,

@@ -138,7 +138,8 @@ public class HotSummarySpider
 				log.setContent(html);
 			log.setUrl(URL);
 			log.setDate(new Date());
-			log.setLog_id(log.getDate().getTime() * 10 + Math.round((Math.random() * 10)));
+			// 日志ID：    time_in_milli左移10位 + 0到1023的随机数（补足剩余10位）
+			log.setLog_id(log.getDate().getTime() << 10 + Math.round((Math.random() * 1023)));
 		}
 		return log;
 	}
@@ -234,15 +235,20 @@ public class HotSummarySpider
 			SpiderLog log = s.spide();
 //			sqlSession.insert(SpiderLog.class.getName() + ".insertSpiderLog", log);
 			List<BriefNews> list = s.handle((String) log.getContent());
+			boolean insert_log = false;
 			for (BriefNews news : list)
 			{
 				news.useless();
 				if (sqlSession.selectOne(BriefNews.class.getName() + ".queryFromTitle", news) == null)
 				{
 l.info("insert news {}",JSON.toJSON(log));
-					sqlSession.insert(SpiderLog.class.getName() + ".insertSpiderLog", log);
+				insert_log = true;
 					sqlSession.insert(BriefNews.class.getName() + ".insertBriefNews", news);
 				}
+			}
+			if(insert_log)
+			{//有新的热搜则插入spider_log
+				sqlSession.insert(SpiderLog.class.getName() + ".insertSpiderLog", log);
 			}
 			sqlSession.commit();
 Thread.sleep(100);
