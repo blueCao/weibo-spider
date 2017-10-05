@@ -148,12 +148,16 @@ public class HotSummarySpider
 	{
 		if (StringUtils.isEmpty(html))
 		{
-			return null;
+			return new ArrayList<BriefNews>(0);
 		}
 
 		DocumentWrapper document = new DocumentWrapper(true, html);
 		Elements els = document.select("script");
 		// 第14个element标签包含了所有的微博热搜排行榜信息
+		if(els.size() < 15)
+		{//没有第14个标签则重新抓取
+			return new ArrayList<BriefNews>(0);
+		}
 		html = els.get(14).html();
 
 		// getting the json string between "(" and ")"
@@ -161,7 +165,7 @@ public class HotSummarySpider
 		int end_index = html.lastIndexOf(")");
 		if (begin_index == -1 || end_index == -1)
 		{
-			return null;
+			return new ArrayList<BriefNews>(0);
 		}
 
 		html = html.substring(begin_index + 1, end_index);
@@ -220,7 +224,7 @@ public class HotSummarySpider
 			result.add(new BriefNews(title, search_times, hot, rank, url));
 		}
 //		l.info(JSON.toJSONString(result));
-		return result.isEmpty() ? null : result;
+		return result.isEmpty() ? new ArrayList<BriefNews>(0) : result;
 	}
 
 	public static void main(String[] args) throws Throwable
