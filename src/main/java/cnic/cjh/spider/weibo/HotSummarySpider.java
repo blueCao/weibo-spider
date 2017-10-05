@@ -139,7 +139,7 @@ public class HotSummarySpider
 			log.setUrl(URL);
 			log.setDate(new Date());
 			// 日志ID：    time_in_milli左移10位 + 0到1023的随机数（补足剩余10位）
-			log.setLog_id(log.getDate().getTime() << 10 + Math.round((Math.random() * 1023)));
+			log.setLog_id(log.getDate().getTime() << 16 + Math.round((Math.random() * 32767)));
 		}
 		return log;
 	}
